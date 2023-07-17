@@ -1,0 +1,25 @@
+* {
+    font-family: Arial, Helvetica, sans-serif;
+    text-align: center;
+}
+
+h2 > span {
+    color: mediumpurple;
+}
+
+section {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+h4 > span {
+    color: mediumpurple;
+}
+
+pre {
+    text-align: justify;
+}
+
+h1 {
+    font-family: 'Montserrat', sans-serif;
+}
