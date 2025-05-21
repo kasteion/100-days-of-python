@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Blogs</title>
+  </head>
+  <body>
+    <h1>Blogs</h1>
+    {% for blog in blogs %} {% if blog.id == 2 %}
+    <h2>{{ blog.title }}</h2>
+    {% endif %}
+    <h3>{{ blog.subtitle }}</h3>
+    <p>{{ blog.body }}</p>
+    {% endfor %}
+  </body>
+</html>
