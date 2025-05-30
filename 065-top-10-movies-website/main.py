@@ -7,6 +7,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, FloatField
 from wtforms.validators import DataRequired, NumberRange
 import requests
+import os
 
 '''
 Red underlines? Install the required packages first: 
@@ -32,6 +33,8 @@ class Base(DeclarativeBase):
 db = SQLAlchemy(model_class=Base)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///movies-collection.db'
 db.init_app(app)
+
+TMDB_TOKEN = os.environ.get("TMDB_TOKEN")
 
 # CREATE TABLE
 class Movie(db.Model):
@@ -99,7 +102,7 @@ def add():
     url = 'https://api.themoviedb.org/3'
     headers = {
         "accept": "application/json",
-        "Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5ZDIwYTU0MDRjZjgwMTMwZmJmZTU3OGJlNmVhNWFiZiIsIm5iZiI6MTY0NjcwMzYzMS44MjgsInN1YiI6IjYyMjZiNDBmMGNiMzM1MDA2NzdlMzQ1MSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.deWn8-0aBttFqyH4ek5FH2E_fS2KI8pAKTGdxJWIibs"
+        "Authorization": f"Bearer {TMDB_TOKEN}"
     }
     id = request.args.get('id')
     form = CreateMovieForm()
