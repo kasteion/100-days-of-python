@@ -34,7 +34,7 @@ db = SQLAlchemy(model_class=Base)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///movies-collection.db'
 db.init_app(app)
 
-TMDB_TOKEN = os.environ.get("TMDB_TOKEN")
+TMDB_API_KEY = os.environ.get("TMDB_API_KEY")
 
 # CREATE TABLE
 class Movie(db.Model):
@@ -102,15 +102,14 @@ def add():
     url = 'https://api.themoviedb.org/3'
     headers = {
         "accept": "application/json",
-        "Authorization": f"Bearer {TMDB_TOKEN}"
     }
     id = request.args.get('id')
     form = CreateMovieForm()
     if form.validate_on_submit(): 
-        res = requests.get(f'{url}/search/movie?include_adult=false&language=en-US&page=1&query={form.title.data}', headers=headers)
+        res = requests.get(f'{url}/search/movie?api_key={TMDB_API_KEY}&include_adult=false&language=en-US&page=1&query={form.title.data}', headers=headers)
         return render_template("select.html", movies = res.json()['results'])
     if id:
-        res = requests.get(f'{url}/movie/{id}?language=en-US', headers=headers)
+        res = requests.get(f'{url}/movie/{id}?api_key={TMDB_API_KEY}&language=en-US', headers=headers)
         data = res.json()
         # print(data['title'], str(data['release_date'])[:4], data['overview'], )
         movie = Movie(title=data['title'], year=int(data['release_date'][:4]), description=data['overview'], rating=data['vote_average'], ranking=0, review='', img_url=f"https://image.tmdb.org/t/p/w1280/{data['poster_path']}")
