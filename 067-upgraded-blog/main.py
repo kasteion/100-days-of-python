@@ -44,6 +44,18 @@ class BlogPost(db.Model):
     author: Mapped[str] = mapped_column(String(250), nullable=False)
     img_url: Mapped[str] = mapped_column(String(250), nullable=False)
 
+# CONFIGURE CKEDITOR
+ckeditor = CKEditor()
+ckeditor.init_app(app)
+
+class PostForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()])
+    subtitle = StringField('Subtitle', validators=[DataRequired()])
+    author = StringField('Your Name', validators=[DataRequired()])
+    img_url = StringField('Blog Image URL', validators=[DataRequired(), URL()])
+    body = CKEditorField('Blog Content')
+    submit = SubmitField('Submit Post')
+
 
 with app.app_context():
     db.create_all()
@@ -64,6 +76,23 @@ def show_post(post_id):
 
 
 # TODO: add_new_post() to create a new blog post
+@app.route('/new-post', methods = ['GET', 'POST'])
+def add_new_post():
+    form = PostForm()
+    if form.validate_on_submit():
+        now = date.today()
+        post = BlogPost(
+            title = form.title.data,
+            subtitle = form.subtitle.data,
+            date = f"{now.strftime('%B')} {now.strftime('%d')}, {now.strftime('%Y')}",
+            body = form.body.data,
+            author = form.author.data,
+            img_url = form.img_url.data
+        )
+        db.session.add(post)
+        db.session.commit()
+        return redirect("/")
+    return render_template("make-post.html", form = form)
 
 # TODO: edit_post() to change an existing blog post
 
