@@ -68,7 +68,7 @@ def get_all_posts():
     return render_template("index.html", all_posts=posts)
 
 # Add a route so that you can click on individual posts.
-@app.route('/<post_id>/show_post')
+@app.route('/show-post/<post_id>')
 def show_post(post_id):
     # Retrieve a BlogPost from the database based on the post_id
     requested_post = db.get_or_404(BlogPost, post_id)
@@ -94,7 +94,36 @@ def add_new_post():
         return redirect("/")
     return render_template("make-post.html", form = form)
 
-# TODO: edit_post() to change an existing blog post
+# edit_post() to change an existing blog post
+@app.route('/edit-post/<post_id>', methods=['GET', 'POST'])
+def edit_post(post_id):
+    post = db.get_or_404(BlogPost, post_id)
+    form = PostForm(
+        title = post.title,
+        subtitle = post.subtitle,
+        body = post.body,
+        author = post.author,
+        img_url = post.img_url
+    )
+    
+    # This works too
+    # form = PostForm()
+    # form.title.data = post.title
+    # form.subtitle.data = post.subtitle
+    # form.body.data = post.body
+    # form.author.data = post.author
+    # form.img_url.data = post.img_url
+    if form.validate_on_submit():
+        post.title = form.title.data
+        post.subtitle = form.subtitle.data
+        post.body = form.body.data
+        post.author = form.author.data
+        post.img_url = form.img_url.data
+        db.session.commit()
+        return redirect(f'/show-post/{post.id}')
+    
+    return render_template("make-post.html", form=form, post=post)
+
 
 # TODO: delete_post() to remove a blog post from the database
 
