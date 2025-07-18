@@ -10,7 +10,7 @@ from sqlalchemy import Integer, String, Text
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 # Import your forms from the forms.py
-from forms import CreatePostForm, RegisterForm
+from forms import CreatePostForm, RegisterForm, LoginForm
 
 
 '''
@@ -31,7 +31,13 @@ app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
 ckeditor = CKEditor(app)
 Bootstrap5(app)
 
-# TODO: Configure Flask-Login
+# Configure Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db.get_or_404(User, user_id)
 
 
 # CREATE DATABASE
@@ -55,7 +61,7 @@ class BlogPost(db.Model):
 
 
 # Create a User table for all your registered users. 
-class User(db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     email: Mapped[str] = mapped_column(String(100), unique=True)
@@ -82,6 +88,7 @@ def register():
             db.session.add(user)
             db.session.commit()
 
+            login_user(user)
             return redirect(url_for("get_all_posts"))
         else:
             print("Returning user")
@@ -93,13 +100,28 @@ def register():
 
 
 # TODO: Retrieve a user from the database based on their email. 
-@app.route('/login')
+@app.route('/login', methods=["GET", "POST"])
 def login():
-    return render_template("login.html")
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = db.session.execute(db.select(User).where(User.email == form.email.data)).scalar()
+        if not user:
+            flash("The email doesn't exist, please try again.")
+            return redirect(url_for("login"))
+ 
+        if check_password_hash(user.password, form.password.data):
+            login_user(user)
+            return redirect(url_for("get_all_posts"))
+        
+        flash("Password incorrect, please try again.")
+        return redirect(url_for("login"))
+
+    return render_template("login.html", form=form)
 
 
 @app.route('/logout')
 def logout():
+    logout_user()
     return redirect(url_for('get_all_posts'))
 
 
